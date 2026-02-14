@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOOKING TOEKANG TJUKUR HAIRSTUDIO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: #ffffff;
+            padding: 40px;
+            text-align: center;
+            border-bottom: 4px solid #666666;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .tagline {
+            color: #cccccc;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+            font-style: italic;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            color: #999999;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+            margin-top: 15px;
+        }
+
+        .content {
+            padding: 40px;
+            background: #f5f5f5;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #000000;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #cccccc;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+            background: #ffffff;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #000000;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .time-slot {
+            padding: 12px;
+            border: 2px solid #cccccc;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #ffffff;
+            font-weight: 600;
+            color: #333333;
+        }
+
+        .time-slot:hover:not(.booked) {
+            border-color: #000000;
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .time-slot.selected {
+            background: #000000;
+            color: #ffffff;
+            border-color: #000000;
+        }
+
+        .time-slot.booked {
+            background: #666666;
+            color: #cccccc;
+            border-color: #999999;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-submit:hover {
+            background: #333333;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-submit:disabled {
+            background: #999999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-admin {
+            width: 100%;
+            padding: 12px;
+            background: #444444;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85em;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .btn-admin:hover {
+            background: #666666;
+        }
+
+        .btn-delete {
+            background: #cc0000;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .btn-delete:hover {
+            background: #ff0000;
+        }
+
+        .admin-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .admin-panel.show {
+            display: block;
+        }
+
+        .booking-list-admin {
+            margin-top: 20px;
+        }
+
+        .booking-item {
+            background: #ffffff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #000000;
+        }
+
+        .booking-info {
+            flex: 1;
+        }
+
+        .booking-info p {
+            margin: 3px 0;
+            font-size: 0.95em;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px 30px;
+            border-radius: 10px;
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #000000;
+            border-left: 4px solid #666666;
+        }
+
+        .notification.error {
+            background: #333333;
+            border-left: 4px solid #ff0000;
+        }
+
+        .info-text {
+            background: #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #000000;
+            border-left: 4px solid #000000;
+            font-weight: 500;
+        }
+
+        .sync-status {
+            text-align: center;
+            padding: 10px;
+            color: #666666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .time-slots {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .header h1 {
+                font-size: 1.5em;
+            }
+            .tagline {
+                font-size: 0.7em;
+            }
+            .booking-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .btn-delete {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BOOKING TOEKANG TJUKUR HAIRSTUDIO</h1>
+            <p class="tagline">THE GROOMING SPECIALIST FOR PEOPLE OF GOOD TASTE AND TO BE DIFFERENT</p>
+            <p>Jam Operasional: 10:00 - 21:00</p>
+        </div>
+
+        <div class="content">
+            <div class="sync-status" id="syncStatus">
+                 Sync aktif
+            </div>
+
+            <div class="info-text">
+                <strong>Catatan:</strong> Pastikan datang 15 menit sebelum waktu booking!
+Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
+            </div>
+
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap *</label>
+                    <input type="text" id="nama" name="nama" required placeholder="Masukkan nama lengkap">
+                </div>
+
+                <div class="form-group">
+                    <label for="whatsapp">Nomor WhatsApp *</label>
+                    <input type="tel" id="whatsapp" name="whatsapp" required placeholder="Contoh: 08123456789" pattern="[0-9]+">
+                </div>
+
+                <div class="form-group">
+                    <label for="tanggal">Tanggal Booking *</label>
+                    <input type="date" id="tanggal" name="tanggal" required min="">
+                </div>
+
+                <div class="form-group">
+                    <label>Pilih Jam Booking *</label>
+                    <div class="time-slots" id="timeSlots">
+                        <!-- Generated by JavaScript -->
+                    </div>
+                    <input type="hidden" id="selectedTime" name="jam" required>
+                </div>
+
+                <button type="submit" class="btn-submit">Konfirmasi Booking</button>
+            </form>
+
+            <!-- Tombol Admin -->
+            <button onclick="toggleAdmin()" class="btn-admin">⚙️ Admin Panel</button>
+            
+            <div class="admin-panel" id="adminPanel">
+                <div class="form-group">
+                    <label>Password Admin:</label>
+                    <input type="password" id="adminPass" placeholder="Masukkan password">
+                </div>
+                <button onclick="loginAdmin()" class="btn-submit" style="margin-top: 10px;">Login</button>
+                
+                <div id="adminContent" style="display: none; margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px; text-transform: uppercase;">Daftar Booking (Klik hapus untuk reschedule)</h3>
+                    <div class="booking-list-admin" id="bookingListAdmin">
+                        <!-- List booking akan muncul di sini -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Konfigurasi
+        const STORAGE_KEY = 'toekang_tjukur_bookings';
+        const ADMIN_WHATSAPP = '6285647090054';
+        const ADMIN_PASSWORD = 'Kosong9kali';
+        
+        // Inisialisasi Broadcast Channel untuk sync real-time
+        const bc = new BroadcastChannel('booking_channel');
+        
+        // Generate time slots dari jam 10:00 sampai 21:00
+        function generateTimeSlots() {
+            const slots = [];
+            for (let i = 10; i <= 21; i++) {
+                const hour = i.toString().padStart(2, '0');
+                slots.push(`${hour}:00`);
+            }
+            return slots;
+        }
+
+        // Ambil data booking dari localStorage
+        function getBookings() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        }
+
+        // Simpan data booking ke localStorage
+        function saveBookings(bookings) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+            bc.postMessage({type: 'update', bookings: bookings});
+        }
+
+        // Toggle admin panel
+        function toggleAdmin() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('show');
+        }
+
+        // Login admin
+        function loginAdmin() {
+            const pass = document.getElementById('adminPass').value;
+            
+            if (pass !== ADMIN_PASSWORD) {
+                showNotification('Password salah!', 'error');
+                return;
+            }
+            
+            document.getElementById('adminContent').style.display = 'block';
+            renderAdminBookingList();
+            showNotification('Login berhasil!');
+        }
+
+        // Render list booking di admin panel
+        function renderAdminBookingList() {
+            const container = document.getElementById('bookingListAdmin');
+            const bookings = getBookings();
+            
+            if (bookings.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">Tidak ada booking</p>';
+                return;
+            }
+            
+            // Sort by date and time
+            const sortedBookings = [...bookings].sort((a, b) => {
+                const dateA = new Date(a.tanggal + ' ' + a.jam);
+                const dateB = new Date(b.tanggal + ' ' + b.jam);
+                return dateB - dateA;
+            });
+            
+            container.innerHTML = sortedBookings.map((booking, index) => `
+                <div class="booking-item">
+                    <div class="booking-info">
+                        <p><strong>${booking.nama}</strong></p>
+                        <p>📱 ${booking.whatsapp}</p>
+                        <p>📅 ${booking.tanggal} | 🕐 ${booking.jam}</p>
+                    </div>
+                    <button class="btn-delete" onclick="hapusBooking(${booking.id})">Hapus</button>
+                </div>
+            `).join('');
+        }
+
+        // Hapus booking satu per satu
+        function hapusBooking(id) {
+            if (!confirm('Yakin mau hapus booking ini?')) {
+                return;
+            }
+            
+            let bookings = getBookings();
+            bookings = bookings.filter(b => b.id !== id);
+            saveBookings(bookings);
+            
+            renderAdminBookingList();
+            renderTimeSlots();
+            showNotification('Booking berhasil dihapus!');
+        }
+
+        // Render time slots
+        function renderTimeSlots() {
+            const container = document.getElementById('timeSlots');
+            const selectedDate = document.getElementById('tanggal').value;
+            container.innerHTML = '';
+            
+            const timeSlots = generateTimeSlots();
+            const bookings = getBookings();
+            
+            timeSlots.forEach(time => {
+                const slot = document.createElement('div');
+                slot.className = 'time-slot';
+                slot.textContent = time;
+                
+                const isBooked = bookings.some(b => 
+                    b.tanggal === selectedDate && b.jam === time
+                );
+                
+                if (isBooked) {
+                    slot.classList.add('booked');
+                    slot.title = 'Sudah dibooking';
+                } else {
+                    slot.onclick = () => selectTime(slot, time);
+                }
+                
+                container.appendChild(slot);
+            });
+        }
+
+        // Pilih jam
+        function selectTime(element, time) {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            document.getElementById('selectedTime').value = time;
+        }
+
+        // Tampilkan notifikasi
+        function showNotification(message, type = 'success') {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification ${type}`;
+            notif.classList.add('show');
+            
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 3000);
+        }
+
+        // Handle form submit
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nama = document.getElementById('nama').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+            const tanggal = document.getElementById('tanggal').value;
+            const jam = document.getElementById('selectedTime').value;
+            
+            if (!jam) {
+                showNotification('Silakan pilih jam booking!', 'error');
+                return;
+            }
+            
+            const bookings = getBookings();
+            const isDoubleBooked = bookings.some(b => 
+                b.tanggal === tanggal && b.jam === jam
+            );
+            
+            if (isDoubleBooked) {
+                showNotification('Maaf, jam tersebut sudah dibooking!', 'error');
+                renderTimeSlots();
+                return;
+            }
+            
+            const bookingData = {
+                id: Date.now(),
+                nama,
+                whatsapp,
+                tanggal,
+                jam,
+                timestamp: new Date().toISOString()
+            };
+            
+            bookings.push(bookingData);
+            saveBookings(bookings);
+            
+            const pesan = `Halo Admin Toekang Tjukur, saya ingin booking:%0A%0A` +
+                         `*Nama:* ${nama}%0A` +
+                         `*WhatsApp:* ${whatsapp}%0A` +
+                         `*Tanggal:* ${tanggal}%0A` +
+                         `*Jam:* ${jam}%0A%0A` +
+                         `Terima kasih.`;
+            
+            const waLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${pesan}`;
+            
+            window.location.href = waLink;
+        });
+
+        // Listen broadcast dari tab/browser lain
+        bc.onmessage = (event) => {
+            if (event.data.type === 'update') {
+                renderTimeSlots();
+                // Refresh admin list kalau sedang login
+                if (document.getElementById('adminContent').style.display === 'block') {
+                    renderAdminBookingList();
+                }
+            }
+        };
+
+        // Set minimum date ke hari ini
+        document.getElementById('tanggal').min = new Date().toISOString().split('T')[0];
+        
+        // Event listener
+        document.getElementById('tanggal').addEventListener('change', renderTimeSlots);
+        
+        // Inisialisasi
+        renderTimeSlots();
+        
+        // Auto refresh setiap 5 detik
+        setInterval(renderTimeSlots, 5000);
+    </script>
+</body>
+</html>
