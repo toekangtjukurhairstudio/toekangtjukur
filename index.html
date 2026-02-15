@@ -80,8 +80,7 @@
         input[type="text"],
         input[type="tel"],
         input[type="date"],
-        input[type="password"],
-        select {
+        input[type="password"] {
             width: 100%;
             padding: 15px;
             border: 2px solid #cccccc;
@@ -91,7 +90,7 @@
             background: #ffffff;
         }
 
-        input:focus, select:focus {
+        input:focus {
             outline: none;
             border-color: #000000;
             box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
@@ -159,12 +158,6 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .btn-submit:disabled {
-            background: #999999;
-            cursor: not-allowed;
-            transform: none;
-        }
-
         .btn-admin {
             width: 100%;
             padding: 12px;
@@ -177,10 +170,6 @@
             margin-top: 15px;
         }
 
-        .btn-admin:hover {
-            background: #666666;
-        }
-
         .btn-delete {
             background: #cc0000;
             color: #ffffff;
@@ -189,10 +178,6 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 0.8em;
-        }
-
-        .btn-delete:hover {
-            background: #ff0000;
         }
 
         .admin-panel {
@@ -269,14 +254,6 @@
             font-weight: 500;
         }
 
-        .sync-status {
-            text-align: center;
-            padding: 10px;
-            color: #666666;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-        }
-
         @media (max-width: 600px) {
             .time-slots {
                 grid-template-columns: repeat(3, 1fr);
@@ -306,13 +283,8 @@
         </div>
 
         <div class="content">
-            <div class="sync-status" id="syncStatus">
-                 🟢 Sistem sync aktif
-            </div>
-
             <div class="info-text">
-                <strong>Catatan:</strong> Pastikan datang 15 menit sebelum waktu booking!
-Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
+                <strong>Catatan:</strong> Setiap jam hanya bisa dipesan 1 kali. Silakan pilih jam yang masih tersedia.
             </div>
 
             <form id="bookingForm">
@@ -342,7 +314,6 @@ Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
                 <button type="submit" class="btn-submit">Konfirmasi Booking</button>
             </form>
 
-            <!-- Tombol Admin -->
             <button onclick="toggleAdmin()" class="btn-admin">⚙️ Admin Panel</button>
             
             <div class="admin-panel" id="adminPanel">
@@ -353,9 +324,8 @@ Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
                 <button onclick="loginAdmin()" class="btn-submit" style="margin-top: 10px;">Login</button>
                 
                 <div id="adminContent" style="display: none; margin-top: 20px;">
-                    <h3 style="margin-bottom: 15px; text-transform: uppercase;">Daftar Booking (Klik hapus untuk reschedule)</h3>
+                    <h3 style="margin-bottom: 15px; text-transform: uppercase;">Daftar Booking</h3>
                     <div class="booking-list-admin" id="bookingListAdmin">
-                        <!-- List booking akan muncul di sini -->
                     </div>
                 </div>
             </div>
@@ -365,15 +335,33 @@ Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
     <div id="notification" class="notification"></div>
 
     <script>
-        // Konfigurasi
-        const STORAGE_KEY = 'toekang_tjukur_bookings';
+        // ============================================
+        // KONFIGURASI GOOGLE FORM - SUDAH LENGKAP
+        // ============================================
+        
+        // Form ID dari URL
+        const FORM_ID = '1FAIpQLSdwGZC43Mh07YReOEfvj1JQuF5zCK1roBkaZEOxKLb3-1yxbQ';
+        
+        // Entry IDs dari inspect element
+        const ENTRY_NAMA = 'entry.2014040901';
+        const ENTRY_WHATSAPP = 'entry.1738284466';
+        const ENTRY_TANGGAL_YEAR = 'entry.812974668_year';
+        const ENTRY_TANGGAL_MONTH = 'entry.812974668_month';
+        const ENTRY_TANGGAL_DAY = 'entry.812974668_day';
+        const ENTRY_JAM = 'entry.1985997844';
+        
+        // URL Google Form
+        const GOOGLE_FORM_URL = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse`;
+        
+        // Konfigurasi lain
         const ADMIN_WHATSAPP = '6285647090054';
         const ADMIN_PASSWORD = 'Kosong9kali';
+        const STORAGE_KEY = 'toekang_tjukur_bookings';
         
-        // Inisialisasi Broadcast Channel untuk sync real-time
+        // Broadcast Channel untuk sync
         const bc = new BroadcastChannel('booking_channel');
         
-        // Generate time slots dari jam 10:00 sampai 21:00
+        // Generate time slots
         function generateTimeSlots() {
             const slots = [];
             for (let i = 10; i <= 21; i++) {
@@ -383,38 +371,35 @@ Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
             return slots;
         }
 
-        // Ambil data booking dari localStorage
+        // Ambil data dari localStorage
         function getBookings() {
             return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         }
 
-        // Simpan data booking ke localStorage
+        // Simpan data
         function saveBookings(bookings) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
-            bc.postMessage({type: 'update', bookings: bookings});
+            bc.postMessage({type: 'update'});
         }
 
         // Toggle admin panel
         function toggleAdmin() {
-            const panel = document.getElementById('adminPanel');
-            panel.classList.toggle('show');
+            document.getElementById('adminPanel').classList.toggle('show');
         }
 
         // Login admin
         function loginAdmin() {
             const pass = document.getElementById('adminPass').value;
-            
             if (pass !== ADMIN_PASSWORD) {
                 showNotification('Password salah!', 'error');
                 return;
             }
-            
             document.getElementById('adminContent').style.display = 'block';
             renderAdminBookingList();
             showNotification('Login berhasil!');
         }
 
-        // Render list booking di admin panel
+        // Render list booking
         function renderAdminBookingList() {
             const container = document.getElementById('bookingListAdmin');
             const bookings = getBookings();
@@ -424,38 +409,33 @@ Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
                 return;
             }
             
-            // Sort by date and time
-            const sortedBookings = [...bookings].sort((a, b) => {
+            const sorted = [...bookings].sort((a, b) => {
                 const dateA = new Date(a.tanggal + ' ' + a.jam);
                 const dateB = new Date(b.tanggal + ' ' + b.jam);
                 return dateB - dateA;
             });
             
-            container.innerHTML = sortedBookings.map((booking, index) => `
+            container.innerHTML = sorted.map((b) => `
                 <div class="booking-item">
                     <div class="booking-info">
-                        <p><strong>${booking.nama}</strong></p>
-                        <p>📱 ${booking.whatsapp}</p>
-                        <p>📅 ${booking.tanggal} | 🕐 ${booking.jam}</p>
+                        <p><strong>${b.nama}</strong></p>
+                        <p>📱 ${b.whatsapp}</p>
+                        <p>📅 ${b.tanggal} | 🕐 ${b.jam}</p>
                     </div>
-                    <button class="btn-delete" onclick="hapusBooking(${booking.id})">Hapus</button>
+                    <button class="btn-delete" onclick="hapusBooking(${b.id})">Hapus</button>
                 </div>
             `).join('');
         }
 
-        // Hapus booking satu per satu
+        // Hapus booking
         function hapusBooking(id) {
-            if (!confirm('Yakin mau hapus booking ini?')) {
-                return;
-            }
-            
+            if (!confirm('Yakin mau hapus booking ini?')) return;
             let bookings = getBookings();
             bookings = bookings.filter(b => b.id !== id);
             saveBookings(bookings);
-            
             renderAdminBookingList();
             renderTimeSlots();
-            showNotification('Booking berhasil dihapus!');
+            showNotification('Booking dihapus!');
         }
 
         // Render time slots
@@ -496,19 +476,16 @@ Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
             document.getElementById('selectedTime').value = time;
         }
 
-        // Tampilkan notifikasi
+        // Notifikasi
         function showNotification(message, type = 'success') {
             const notif = document.getElementById('notification');
             notif.textContent = message;
             notif.className = `notification ${type}`;
             notif.classList.add('show');
-            
-            setTimeout(() => {
-                notif.classList.remove('show');
-            }, 3000);
+            setTimeout(() => notif.classList.remove('show'), 3000);
         }
 
-        // Handle form submit
+        // Handle submit
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -522,6 +499,7 @@ Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
                 return;
             }
             
+            // Cek double booking
             const bookings = getBookings();
             const isDoubleBooked = bookings.some(b => 
                 b.tanggal === tanggal && b.jam === jam
@@ -533,18 +511,37 @@ Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
                 return;
             }
             
-            const bookingData = {
+            // Simpan ke localStorage
+            const newBooking = {
                 id: Date.now(),
-                nama,
-                whatsapp,
-                tanggal,
-                jam,
+                nama, whatsapp, tanggal, jam,
                 timestamp: new Date().toISOString()
             };
-            
-            bookings.push(bookingData);
+            bookings.push(newBooking);
             saveBookings(bookings);
             
+            // Parse tanggal untuk Google Form
+            const dateObj = new Date(tanggal);
+            const year = dateObj.getFullYear();
+            const month = dateObj.getMonth() + 1;
+            const day = dateObj.getDate();
+            
+            // Submit ke Google Form
+            const formData = new FormData();
+            formData.append(ENTRY_NAMA, nama);
+            formData.append(ENTRY_WHATSAPP, whatsapp);
+            formData.append(ENTRY_TANGGAL_YEAR, year);
+            formData.append(ENTRY_TANGGAL_MONTH, month);
+            formData.append(ENTRY_TANGGAL_DAY, day);
+            formData.append(ENTRY_JAM, jam);
+            
+            fetch(GOOGLE_FORM_URL, {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors'
+            }).catch(() => {});
+            
+            // Redirect ke WA
             const pesan = `Halo Admin Toekang Tjukur, saya ingin booking:%0A%0A` +
                          `*Nama:* ${nama}%0A` +
                          `*WhatsApp:* ${whatsapp}%0A` +
@@ -552,32 +549,23 @@ Harap konfirmasi Resecedule/Cancel 30 menit sebelum waktu booking tiba!.
                          `*Jam:* ${jam}%0A%0A` +
                          `Terima kasih.`;
             
-            const waLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${pesan}`;
-            
-            window.location.href = waLink;
+            window.location.href = `https://wa.me/${ADMIN_WHATSAPP}?text=${pesan}`;
         });
 
-        // Listen broadcast dari tab/browser lain
+        // Listen broadcast
         bc.onmessage = (event) => {
             if (event.data.type === 'update') {
                 renderTimeSlots();
-                // Refresh admin list kalau sedang login
                 if (document.getElementById('adminContent').style.display === 'block') {
                     renderAdminBookingList();
                 }
             }
         };
 
-        // Set minimum date ke hari ini
+        // Init
         document.getElementById('tanggal').min = new Date().toISOString().split('T')[0];
-        
-        // Event listener
         document.getElementById('tanggal').addEventListener('change', renderTimeSlots);
-        
-        // Inisialisasi
         renderTimeSlots();
-        
-        // Auto refresh setiap 5 detik
         setInterval(renderTimeSlots, 5000);
     </script>
 </body>
